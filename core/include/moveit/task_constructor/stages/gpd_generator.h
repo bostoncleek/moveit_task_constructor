@@ -38,12 +38,33 @@
 
  #include <moveit/task_constructor/stages/generate_pose.h>
 
+ #include <memory>
+
  #include <moveit_task_constructor_msgs/GenerateDeepGraspPoseAction.h>
  #include <actionlib/client/simple_action_client.h>
+ // #include <actionlib/action_definition.h>
 
  namespace moveit {
  namespace task_constructor {
  namespace stages {
+
+ template<class ActionSpec>
+ class ActionStageBase
+ {
+ private:
+   ACTION_DEFINITION(ActionSpec);
+
+ public:
+   ActionStageBase()
+   {
+     clientPtr_.reset(new actionlib::SimpleActionClient<ActionSpec>("topic_name", true));
+   }
+   // void feedbackCallback(const FeedbackConstPtr &feedback);
+
+protected:
+  std::unique_ptr<actionlib::SimpleActionClient<ActionSpec>> clientPtr_;
+};
+
 
  class DeepGraspPose : public GeneratePose
  {
