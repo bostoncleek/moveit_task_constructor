@@ -34,59 +34,44 @@
     Desc:   Grasp generator stage using deep learning based grasp synthesizers
  */
 
- #pragma once
+#pragma once
 
- #include <moveit/task_constructor/stages/generate_pose.h>
+#include <moveit/task_constructor/stages/generate_pose.h>
 
- #include <memory>
+#include <memory>
 
- #include <moveit_task_constructor_msgs/GenerateDeepGraspPoseAction.h>
- #include <actionlib/client/simple_action_client.h>
- // #include <actionlib/action_definition.h>
+#include <moveit_task_constructor_msgs/GenerateDeepGraspPoseAction.h>
+#include <actionlib/client/simple_action_client.h>
 
- namespace moveit {
- namespace task_constructor {
- namespace stages {
+#include <moveit/task_constructor/action_base.h>
 
- template<class ActionSpec>
- class ActionStageBase
- {
- private:
-   ACTION_DEFINITION(ActionSpec);
 
- public:
-   ActionStageBase()
-   {
-     clientPtr_.reset(new actionlib::SimpleActionClient<ActionSpec>("topic_name", true));
-   }
-   // void feedbackCallback(const FeedbackConstPtr &feedback);
+namespace moveit {
+namespace task_constructor {
+namespace stages {
+
+
+class DeepGraspPose : public GeneratePose
+{
+public:
+	DeepGraspPose(const std::string& name = "generate grasp pose");
+
+	void init(const core::RobotModelConstPtr& robot_model) override;
+	void compute() override;
+
+	void setEndEffector(const std::string& eef) { setProperty("eef", eef); }
+	void setObject(const std::string& object) { setProperty("object", object); }
+
+	void setPreGraspPose(const std::string& pregrasp) { properties().set("pregrasp", pregrasp); }
+	void setPreGraspPose(const moveit_msgs::RobotState& pregrasp) { properties().set("pregrasp", pregrasp); }
+	void setGraspPose(const std::string& grasp) { properties().set("grasp", grasp); }
+	void setGraspPose(const moveit_msgs::RobotState& grasp) { properties().set("grasp", grasp); }
 
 protected:
-  std::unique_ptr<actionlib::SimpleActionClient<ActionSpec>> clientPtr_;
-};
-
-
- class DeepGraspPose : public GeneratePose
- {
- public:
- 	DeepGraspPose(const std::string& name = "generate grasp pose");
-
- 	void init(const core::RobotModelConstPtr& robot_model) override;
- 	void compute() override;
-
- 	void setEndEffector(const std::string& eef) { setProperty("eef", eef); }
- 	void setObject(const std::string& object) { setProperty("object", object); }
-
- 	void setPreGraspPose(const std::string& pregrasp) { properties().set("pregrasp", pregrasp); }
- 	void setPreGraspPose(const moveit_msgs::RobotState& pregrasp) { properties().set("pregrasp", pregrasp); }
- 	void setGraspPose(const std::string& grasp) { properties().set("grasp", grasp); }
- 	void setGraspPose(const moveit_msgs::RobotState& grasp) { properties().set("grasp", grasp); }
-
- protected:
- 	void onNewSolution(const SolutionBase& s) override;
+	void onNewSolution(const SolutionBase& s) override;
 
   actionlib::SimpleActionClient<moveit_task_constructor_msgs::GenerateDeepGraspPoseAction> client_;
- };
- }  // namespace stages
- }  // namespace task_constructor
- }  // namespace moveit
+};
+}  // namespace stages
+}  // namespace task_constructor
+}  // namespace moveit
